@@ -7,12 +7,12 @@ const ProductList = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Costruzione URL API in base alla pagina e al numero di elementi per pagina
+  // URL dinamico per chiamata API
   const [urlProducts, setUrlProducts] = useState(
     `https://dummyjson.com/products?limit=${limit}&skip=${limit * (page - 1)}&select=title,category,price,thumbnail,brand`
   );
 
-  // Aggiorna URL ogni volta che cambia pagina o limite
+  // Aggiorna URL quando cambiano page o limit
   useEffect(() => {
     setUrlProducts(
       `https://dummyjson.com/products?limit=${limit}&skip=${limit * (page - 1)}&select=title,category,price,thumbnail,brand`
@@ -23,11 +23,17 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-      const res = await fetch(urlProducts);
-      const data = await res.json();
-      setProducts(data.products);
-      setLoading(false);
+      try {
+        const res = await fetch(urlProducts);
+        const data = await res.json();
+        setProducts(data.products);
+      } catch (error) {
+        console.error("Errore nel fetch:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchProducts();
   }, [urlProducts]);
 
@@ -40,7 +46,7 @@ const ProductList = () => {
           <p>Caricamento...</p>
         ) : (
           products.map((product) => (
-            <div key={product.title} className="card">
+            <div key={product.id} className="card">
               <img src={product.thumbnail} alt={product.title} />
               <h3>{product.title}</h3>
               <p><strong>Marca:</strong> {product.brand}</p>
@@ -51,7 +57,6 @@ const ProductList = () => {
         )}
       </div>
 
- 
       <div className="pagination">
         <button onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1}>
           Precedente
